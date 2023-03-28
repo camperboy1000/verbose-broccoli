@@ -1,3 +1,16 @@
-fn main() {
-    println!("Hello, world!");
+use std::io;
+
+use actix_web::{get, App, HttpServer, Responder};
+
+#[get("/")]
+async fn index() -> impl Responder {
+    "Hello World!"
+}
+
+#[actix_web::main]
+async fn main() -> io::Result<()> {
+    HttpServer::new(|| App::new().service(index))
+        .bind(("127.0.0.1", 8080))?
+        .run()
+        .await
 }
