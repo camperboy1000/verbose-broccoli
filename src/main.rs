@@ -1,8 +1,11 @@
+mod models;
+
 use std::{env, process};
 
 use actix_web::{web, App, HttpServer};
 use log::{error, info, LevelFilter};
-use sqlx::PgPool;
+use models::AppState;
+use sqlx::{PgPool, Pool, Postgres};
 
 static APP_NAME: &str = "Laundry-API";
 
@@ -26,17 +29,30 @@ fn initalize_syslog() {
     }
 }
 
-/// Parses and returns the database URL from the DATABASE_URL [environment variable](std::env::var).
+/// Parses and returns a connection pool to the configured database.
+/// The database URL is derived from the DATABASE_URL [environment variable](std::env::var).
 ///
 /// # Exits
-/// The DATABASE_URL environment variable  not being set is considered an unrecoverable error and exits the process.
-fn parse_database_url() -> String {
-    match env::var("DATABASE_URL") {
+/// The DATABASE_URL environment variable not being set is considered an unrecoverable error which exits the process.
+/// The process will also exit if an error occurs when attempting to connect to the database.
+fn connect_postgres_database() -> Pool<Postgres> {
+    let database_url = match env::var("DATABASE_URL") {
         Ok(url) => url,
         Err(err) => {
             throw_error_message(format!(
                 "Unable to parse DATABASE_URL enviroment variable: {err}"
             ));
+            process::exit(1);
+        }
+    };
+
+    match PgPool::connect_lazy(database_url.as_str()) {
+        Ok(pool) => {
+            info!("Connected to the database");
+            pool
+        }
+        Err(err) => {
+            throw_error_message(format!("Failed to connect to the database: {err}"));
             process::exit(1);
         }
     }
@@ -46,28 +62,22 @@ fn parse_database_url() -> String {
 ///
 /// The message is a [String] which is passed to the system log and STDERR.
 fn throw_error_message(message: String) {
-    error!("ERROR: {message}");
+    error!("{message}");
     eprintln!("ERROR: {message}\n");
 }
 
 #[actix_web::main]
 async fn main() {
     initalize_syslog();
+    let database_pool = connect_postgres_database();
 
-    let database_url = parse_database_url();
-
-    let pool = match PgPool::connect_lazy(database_url.as_str()) {
-        Ok(pool) => {
-            info!("INFO: Connected to the database");
-            pool
-        }
-        Err(err) => {
-            throw_error_message(format!("Failed to connect to the database: {err}"));
-            process::exit(1);
-        }
-    };
-
-    let http_server = HttpServer::new(|| App::new().service(web::scope("/user")));
+    let http_server = HttpServer::new(move || {
+        App::new()
+            .service(web::scope("/user"))
+            .app_data(web::Data::new(AppState {
+                database: database_pool.clone(),
+            }))
+    });
 
     let http_server = match http_server.bind(("127.0.0.1", 8080)) {
         Ok(server) => server,
