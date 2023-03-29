@@ -1,10 +1,11 @@
-use crate::models::{AppState, Machine};
 use actix_web::{
     get,
     web::{Data, Path},
     HttpResponse, Responder,
 };
 use sqlx::query_as;
+
+use crate::models::{AppState, Machine};
 
 #[get("/")]
 async fn get_all_machines(data: Data<AppState>) -> impl Responder {

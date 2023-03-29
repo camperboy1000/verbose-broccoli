@@ -20,3 +20,11 @@ pub enum MachineType {
     Washer,
     Dryer,
 }
+
+#[derive(Serialize, Deserialize, FromRow)]
+pub struct Room {
+    #[sqlx(rename = "id")]
+    room_id: i32,
+    name: String,
+    description: String,
+}
