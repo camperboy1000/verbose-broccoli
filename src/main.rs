@@ -1,10 +1,8 @@
-mod models;
-
 use std::{env, process};
 
 use actix_web::{web, App, HttpServer};
+use laundry_api::{machine, models::AppState};
 use log::{error, info, LevelFilter};
-use models::AppState;
 use sqlx::{PgPool, Pool, Postgres};
 
 static APP_NAME: &str = "Laundry-API";
@@ -73,7 +71,11 @@ async fn main() {
 
     let http_server = HttpServer::new(move || {
         App::new()
-            .service(web::scope("/user"))
+            .service(
+                web::scope("/machine")
+                    .service(machine::get_all_machines)
+                    .service(machine::get_machine),
+            )
             .app_data(web::Data::new(AppState {
                 database: database_pool.clone(),
             }))

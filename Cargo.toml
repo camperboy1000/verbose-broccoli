@@ -8,9 +8,9 @@ edition = "2021"
 [dependencies]
 actix-web = { version = "4" }
 log = "0.4"
+serde = "1"
 sqlx = { version = "0.6", features = ["postgres", "runtime-actix-native-tls"] }
 syslog = "6"
-utoipa = { version = "3", features = ["actix_extras"] }
 
 [profile.dev.package.sqlx-macros]
 opt-level = 3
