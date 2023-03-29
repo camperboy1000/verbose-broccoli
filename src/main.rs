@@ -1,7 +1,7 @@
 use std::{env, process};
 
 use actix_web::{web, App, HttpServer};
-use laundry_api::{machine, models::AppState, room};
+use laundry_api::{machine, models::AppState, room, user};
 use sqlx::{PgPool, Pool, Postgres};
 
 const APP_NAME: &str = "Laundry-API";
@@ -66,6 +66,11 @@ async fn main() {
                 web::scope("/room")
                     .service(room::get_all_rooms)
                     .service(room::get_room),
+            )
+            .service(
+                web::scope("/user")
+                    .service(user::get_all_users)
+                    .service(user::get_user),
             )
             .app_data(web::Data::new(AppState {
                 database: database_pool.clone(),

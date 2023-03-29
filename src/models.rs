@@ -28,3 +28,9 @@ pub struct Room {
     name: String,
     description: String,
 }
+
+#[derive(Serialize, Deserialize, FromRow)]
+pub struct User {
+    username: String,
+    admin: bool,
+}
