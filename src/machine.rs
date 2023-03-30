@@ -23,11 +23,14 @@ async fn get_machine(data: Data<AppState>, path: Path<i32>) -> impl Responder {
     let machine_id = path.into_inner();
 
     match query_as::<_, Machine>("SELECT * FROM machine WHERE id = $1")
-        .bind(machine_id)
-        .fetch_one(&data.database)
+        .bind(&machine_id)
+        .fetch_optional(&data.database)
         .await
     {
-        Ok(machine) => HttpResponse::Ok().json(machine),
         Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+        Ok(machine) => match machine {
+            Some(machine) => HttpResponse::Ok().json(&machine),
+            None => HttpResponse::NotFound().finish(),
+        },
     }
 }

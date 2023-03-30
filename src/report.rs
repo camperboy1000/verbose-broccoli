@@ -23,11 +23,14 @@ async fn get_report(data: Data<AppState>, path: Path<i32>) -> impl Responder {
     let report_id = path.into_inner();
 
     match query_as::<_, Report>("SELECT * FROM report WHERE id = $1")
-        .bind(report_id)
-        .fetch_one(&data.database)
+        .bind(&report_id)
+        .fetch_optional(&data.database)
         .await
     {
-        Ok(report) => HttpResponse::Ok().json(report),
         Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+        Ok(report) => match report {
+            Some(report) => HttpResponse::Ok().json(&report),
+            None => HttpResponse::NotFound().finish(),
+        },
     }
 }
