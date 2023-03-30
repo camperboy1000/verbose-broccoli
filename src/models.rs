@@ -9,10 +9,10 @@ pub struct AppState {
 #[derive(Serialize, Deserialize, FromRow)]
 pub struct Machine {
     #[sqlx(rename = "id")]
-    machine_id: i32,
+    pub machine_id: i32,
     #[sqlx(rename = "type")]
-    machine_type: MachineType,
-    room_id: i32,
+    pub machine_type: MachineType,
+    pub room_id: i32,
 }
 
 #[derive(Serialize, Deserialize, Type)]
@@ -25,31 +25,31 @@ pub enum MachineType {
 #[derive(Serialize, Deserialize, FromRow)]
 pub struct Room {
     #[sqlx(rename = "id")]
-    room_id: i32,
-    name: String,
-    description: String,
+    pub room_id: i32,
+    pub name: String,
+    pub description: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, FromRow)]
 pub struct User {
-    username: String,
-    admin: bool,
+    pub username: String,
+    pub admin: bool,
 }
 
 #[derive(Serialize, Deserialize, FromRow)]
 pub struct Report {
     #[sqlx(rename = "id")]
-    report_id: i32,
-    machine_id: i32,
-    reporter_username: String,
+    pub report_id: i32,
+    pub machine_id: i32,
+    pub reporter_username: String,
     #[sqlx(rename = "type")]
-    report_type: ReportType,
-    time: NaiveDateTime,
-    description: Option<String>,
-    archived: bool,
+    pub report_type: ReportType,
+    pub time: NaiveDateTime,
+    pub description: Option<String>,
+    pub archived: bool,
 }
 
-#[derive(Serialize, Deserialize, Type)]
+#[derive(Debug, Serialize, Deserialize, Type)]
 #[sqlx(type_name = "report_type", rename_all = "lowercase")]
 pub enum ReportType {
     Operational,

@@ -75,7 +75,8 @@ async fn main() {
             .service(
                 web::scope("/report")
                     .service(report::get_all_reports)
-                    .service(report::get_report),
+                    .service(report::get_report)
+                    .service(report::submit_report),
             )
             .app_data(web::Data::new(AppState {
                 database: database_pool.clone(),

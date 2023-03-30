@@ -23,7 +23,7 @@ async fn get_machine(data: Data<AppState>, path: Path<i32>) -> impl Responder {
     let machine_id = path.into_inner();
 
     match query_as::<_, Machine>("SELECT * FROM machine WHERE id = $1")
-        .bind(&machine_id)
+        .bind(machine_id)
         .fetch_optional(&data.database)
         .await
     {

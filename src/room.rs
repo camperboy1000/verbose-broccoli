@@ -23,7 +23,7 @@ async fn get_room(data: Data<AppState>, path: Path<i32>) -> impl Responder {
     let room_id = path.into_inner();
 
     match query_as::<_, Room>("SELECT * FROM room WHERE id = $1")
-        .bind(&room_id)
+        .bind(room_id)
         .fetch_optional(&data.database)
         .await
     {

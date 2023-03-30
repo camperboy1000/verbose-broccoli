@@ -23,7 +23,7 @@ async fn get_user(data: Data<AppState>, path: Path<String>) -> impl Responder {
     let username = path.into_inner();
 
     match query_as::<_, User>("SELECT * FROM public.user WHERE username = $1")
-        .bind(&username)
+        .bind(username)
         .fetch_optional(&data.database)
         .await
     {
