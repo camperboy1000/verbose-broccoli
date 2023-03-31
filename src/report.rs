@@ -11,7 +11,8 @@ use crate::models::{AppState, Report, ReportType};
 
 #[derive(Serialize, Deserialize)]
 struct ReportSubmission {
-    machine_id: i32,
+    machine_id: String,
+    room_id: i32,
     reporter_username: String,
     report_type: ReportType,
     description: Option<String>,
@@ -51,8 +52,11 @@ async fn submit_report(
     Json(report_submission): Json<ReportSubmission>,
 ) -> impl Responder {
     let machine_id_present = match query!(
-        r#"SELECT machine_id FROM report WHERE machine_id = $1"#,
-        &report_submission.machine_id
+        r#"SELECT machine_id FROM report
+        WHERE machine_id = $1
+        AND room_id = $2"#,
+        &report_submission.machine_id,
+        &report_submission.room_id
     )
     .fetch_optional(&data.database)
     .await
@@ -76,6 +80,7 @@ async fn submit_report(
         RETURNING
             id as "report_id: i32",
             machine_id,
+            room_id,
             reporter_username,
             time,
             type as "report_type: ReportType",

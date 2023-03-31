@@ -9,10 +9,10 @@ pub struct AppState {
 #[derive(Serialize, Deserialize, FromRow)]
 pub struct Machine {
     #[sqlx(rename = "id")]
-    pub machine_id: i32,
+    pub machine_id: String,
+    pub room_id: i32,
     #[sqlx(rename = "type")]
     pub machine_type: MachineType,
-    pub room_id: i32,
 }
 
 #[derive(Serialize, Deserialize, Type)]
@@ -40,7 +40,8 @@ pub struct User {
 pub struct Report {
     #[sqlx(rename = "id")]
     pub report_id: i32,
-    pub machine_id: i32,
+    pub room_id: i32,
+    pub machine_id: String,
     pub reporter_username: String,
     #[sqlx(rename = "type")]
     pub report_type: ReportType,
