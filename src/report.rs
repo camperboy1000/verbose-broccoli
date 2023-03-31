@@ -82,7 +82,7 @@ async fn submit_report(
 ) -> impl Responder {
     let machine_id_present = match query!(
         r#"
-        SELECT machine_id
+        SELECT machine_id, room_id
         FROM report
         WHERE machine_id = $1
         AND room_id = $2
@@ -99,8 +99,8 @@ async fn submit_report(
 
     if machine_id_present {
         return HttpResponse::BadRequest().body(format!(
-            "{} does not map to a valid machine_id",
-            &report_submission.machine_id
+            "room_id: {} machine_id: {} does not map to a valid machine",
+            &report_submission.room_id, &report_submission.machine_id
         ));
     }
 
