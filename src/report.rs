@@ -20,9 +20,23 @@ struct ReportSubmission {
 
 #[get("/")]
 async fn get_all_reports(data: Data<AppState>) -> impl Responder {
-    match query_as::<_, Report>("SELECT * FROM report")
-        .fetch_all(&data.database)
-        .await
+    match query_as!(
+        Report,
+        r#"
+        SELECT 
+            id as "report_id: i32",
+            machine_id,
+            room_id,
+            reporter_username,
+            time,
+            type as "report_type: ReportType",
+            description,
+            archived
+        FROM report
+        "#,
+    )
+    .fetch_all(&data.database)
+    .await
     {
         Ok(reports) => HttpResponse::Ok().json(reports),
         Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
@@ -33,10 +47,25 @@ async fn get_all_reports(data: Data<AppState>) -> impl Responder {
 async fn get_report(data: Data<AppState>, path: Path<i32>) -> impl Responder {
     let report_id = path.into_inner();
 
-    match query_as::<_, Report>("SELECT * FROM report WHERE id = $1")
-        .bind(report_id)
-        .fetch_optional(&data.database)
-        .await
+    match query_as!(
+        Report,
+        r#"
+        SELECT
+            id as "report_id: i32",
+            machine_id,
+            room_id,
+            reporter_username,
+            time,
+            type as "report_type: ReportType",
+            description,
+            archived
+        FROM report
+        WHERE id = $1
+        "#,
+        report_id
+    )
+    .fetch_optional(&data.database)
+    .await
     {
         Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
         Ok(report) => match report {
@@ -52,9 +81,12 @@ async fn submit_report(
     Json(report_submission): Json<ReportSubmission>,
 ) -> impl Responder {
     let machine_id_present = match query!(
-        r#"SELECT machine_id FROM report
+        r#"
+        SELECT machine_id
+        FROM report
         WHERE machine_id = $1
-        AND room_id = $2"#,
+        AND room_id = $2
+        "#,
         &report_submission.machine_id,
         &report_submission.room_id
     )
