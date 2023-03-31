@@ -5,7 +5,7 @@ use actix_web::{
 };
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use sqlx::query_as;
+use sqlx::{query, query_as};
 
 use crate::models::{AppState, Report, ReportType};
 
@@ -50,6 +50,24 @@ async fn submit_report(
     data: Data<AppState>,
     Json(report_submission): Json<ReportSubmission>,
 ) -> impl Responder {
+    let machine_id_present = match query!(
+        r#"SELECT machine_id FROM report WHERE machine_id = $1"#,
+        &report_submission.machine_id
+    )
+    .fetch_optional(&data.database)
+    .await
+    {
+        Ok(machine_id) => machine_id.is_some(),
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
+    };
+
+    if machine_id_present {
+        return HttpResponse::BadRequest().body(format!(
+            "{} does not map to a valid machine_id",
+            &report_submission.machine_id
+        ));
+    }
+
     match query_as!(
         Report,
         r#"
@@ -74,6 +92,9 @@ async fn submit_report(
     .await
     {
         Ok(report) => HttpResponse::Created().json(report),
-        Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+        Err(err) => match err {
+            sqlx::Error::Database(err) => HttpResponse::BadRequest().body(err.to_string()),
+            _ => HttpResponse::InternalServerError().body(err.to_string()),
+        },
     }
 }
