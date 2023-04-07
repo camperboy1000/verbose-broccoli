@@ -137,7 +137,7 @@ async fn get_report(data: Data<AppState>, path: Path<i32>) -> impl Responder {
 #[utoipa::path(
     context_path = "/report",
     responses(
-        (status = 201 , description = "The report was created", body = Report),
+        (status = 201, description = "The report was created", body = Report),
         (status = 400, description = "The requested query was invalid"),
         (status = 500, description = "An internal server error occurred")
     )
@@ -215,7 +215,7 @@ async fn delete_report(data: Data<AppState>, path: Path<i32>) -> impl Responder 
     };
 
     if !report_present {
-        return HttpResponse::NotFound().body(format!("The report {report_id} does not exist."));
+        return HttpResponse::NotFound().body(format!("The report {report_id} was not found."));
     }
 
     match query_as!(

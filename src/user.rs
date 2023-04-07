@@ -1,10 +1,10 @@
 use actix_web::{
-    get, post,
+    delete, get, post,
     web::{Data, Json, Path},
     HttpResponse, Responder,
 };
 use serde::{Deserialize, Serialize};
-use sqlx::{query, query_as};
+use sqlx::{query, query_as, Pool, Postgres};
 
 use crate::models::{AppState, User};
 
@@ -12,6 +12,26 @@ use crate::models::{AppState, User};
 struct UserSubmission {
     username: String,
     admin: bool,
+}
+
+async fn is_username_present(
+    database: &Pool<Postgres>,
+    username: &String,
+) -> Result<bool, sqlx::Error> {
+    match query!(
+        r#"
+        SELECT username
+        FROM public.user
+        WHERE username = $1
+        "#,
+        username
+    )
+    .fetch_optional(database)
+    .await
+    {
+        Ok(username) => Ok(username.is_some()),
+        Err(err) => Err(err),
+    }
 }
 
 #[utoipa::path(
@@ -79,24 +99,15 @@ async fn get_user(data: Data<AppState>, path: Path<String>) -> impl Responder {
     )
 )]
 #[post("/")]
-async fn create_user(
+async fn add_user(
     data: Data<AppState>,
     Json(user_submission): Json<UserSubmission>,
 ) -> impl Responder {
-    let username_present = match query!(
-        r#"
-        SELECT username
-        FROM public.user
-        WHERE username = $1
-        "#,
-        &user_submission.username
-    )
-    .fetch_optional(&data.database)
-    .await
-    {
-        Ok(username) => username.is_some(),
-        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
-    };
+    let username_present =
+        match is_username_present(&data.database, &user_submission.username).await {
+            Ok(result) => result,
+            Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
+        };
 
     if username_present {
         return HttpResponse::Conflict()
@@ -117,6 +128,44 @@ async fn create_user(
     .await
     {
         Ok(user) => HttpResponse::Created().json(user),
+        Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+    }
+}
+
+#[utoipa::path(
+    context_path = "/user",
+    responses(
+        (status = 200, description = "Delected the requested user", body = User),
+        (status = 404, description = "The requested user was not found"),
+        (status = 500, description = "An internal server error occurred")
+    )
+)]
+#[delete("/{username}")]
+async fn delete_user(data: Data<AppState>, path: Path<String>) -> impl Responder {
+    let username = path.into_inner();
+
+    let username_present = match is_username_present(&data.database, &username).await {
+        Ok(result) => result,
+        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
+    };
+
+    if !username_present {
+        return HttpResponse::NotFound().body(format!("The user {username} was not found."));
+    }
+
+    match query_as!(
+        User,
+        r#"
+        DELETE FROM public.user
+        WHERE username = $1
+        RETURNING username, admin
+        "#,
+        &username
+    )
+    .fetch_one(&data.database)
+    .await
+    {
+        Ok(user) => HttpResponse::Ok().json(user),
         Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
     }
 }

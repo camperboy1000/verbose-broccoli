@@ -70,6 +70,8 @@ async fn main() {
             room::get_room,
             user::get_all_users,
             user::get_user,
+            user::add_user,
+            user::delete_user,
             report::get_all_reports,
             report::get_report,
             report::submit_report,
@@ -107,7 +109,9 @@ async fn main() {
             .service(
                 web::scope("/user")
                     .service(user::get_all_users)
-                    .service(user::get_user),
+                    .service(user::get_user)
+                    .service(user::add_user)
+                    .service(user::delete_user),
             )
             .service(
                 web::scope("/report")
