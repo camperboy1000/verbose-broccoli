@@ -14,6 +14,13 @@ struct UserSubmission {
     admin: bool,
 }
 
+#[utoipa::path(
+    context_path = "/user",
+    responses(
+        (status = 200, description = "Lists all users", body = Vec<User>),
+        (status = 500, description = "An internal server error occurred")
+    )
+)]
 #[get("/")]
 async fn get_all_users(data: Data<AppState>) -> impl Responder {
     match query_as!(
@@ -31,6 +38,14 @@ async fn get_all_users(data: Data<AppState>) -> impl Responder {
     }
 }
 
+#[utoipa::path(
+    context_path = "/user",
+    responses(
+        (status = 200, description = "The requested user", body=User),
+        (status = 404, description = "The requested user was not found"),
+        (status = 500, description = "An internal server error occurred")
+    )
+)]
 #[get("/{username}")]
 async fn get_user(data: Data<AppState>, path: Path<String>) -> impl Responder {
     let username = path.into_inner();
@@ -55,6 +70,14 @@ async fn get_user(data: Data<AppState>, path: Path<String>) -> impl Responder {
     }
 }
 
+#[utoipa::path(
+    context_path = "/user",
+    responses(
+        (status = 201, description = "The user requested", body = User),
+        (status = 409, description = "The requested username is already in use"),
+        (status = 500, description = "An internal server error occurred")
+    )
+)]
 #[post("/")]
 async fn create_user(
     data: Data<AppState>,

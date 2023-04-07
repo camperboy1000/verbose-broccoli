@@ -7,6 +7,13 @@ use sqlx::query_as;
 
 use crate::models::{AppState, Machine, MachineType};
 
+#[utoipa::path(
+    context_path = "/machine",
+    responses(
+        (status = 200, description = "List of all machines", body = Vec<Machine>),
+        (status = 500, description = "An internal server error occurred")
+    )
+)]
 #[get("/")]
 async fn get_all_machines(data: Data<AppState>) -> impl Responder {
     match query_as!(
@@ -27,6 +34,14 @@ async fn get_all_machines(data: Data<AppState>) -> impl Responder {
     }
 }
 
+#[utoipa::path(
+    context_path = "/machine",
+    responses(
+        (status = 200, description = "The requested machine", body = Machine),
+        (status = 404, description = "The requested machine was not found"),
+        (status = 500, description = "An internal server error occurred")
+    )
+)]
 #[get("/{room_id}/{machine_id}")]
 async fn get_machine(data: Data<AppState>, path: Path<(i32, String)>) -> impl Responder {
     let (room_id, machine_id) = path.into_inner();

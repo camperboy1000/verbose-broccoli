@@ -1,10 +1,17 @@
 use std::{env, process};
 
 use actix_web::{web, App, HttpServer};
-use laundry_api::{machine, models::AppState, report, room, user};
+use laundry_api::{
+    machine,
+    models::{AppState, Machine, MachineType, Report, ReportType, Room, User},
+    report::{self, ReportSubmission},
+    room, user,
+};
 use sqlx::{PgPool, Pool, Postgres};
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
-const APP_NAME: &str = "Laundry-API";
+const APP_NAME: &str = "Laundry API";
 
 /// Initialize the logging system, using [syslog] as the backend.
 fn initalize_syslog() {
@@ -53,7 +60,37 @@ fn connect_postgres_database() -> Pool<Postgres> {
 #[actix_web::main]
 async fn main() {
     initalize_syslog();
-    let database_pool = connect_postgres_database();
+
+    #[derive(OpenApi)]
+    #[openapi(
+        paths(
+            machine::get_all_machines,
+            machine::get_machine,
+            room::get_all_rooms,
+            room::get_room,
+            user::get_all_users,
+            user::get_user,
+            report::get_all_reports,
+            report::get_report,
+            report::submit_report,
+            report::delete_report
+        ),
+        components(schemas(
+            Machine,
+            Room,
+            Report,
+            User,
+            MachineType,
+            ReportType,
+            ReportSubmission
+        ))
+    )]
+    struct ApiDoc;
+    let openapi = ApiDoc::openapi();
+
+    let app_state = AppState {
+        database: connect_postgres_database(),
+    };
 
     let http_server = HttpServer::new(move || {
         App::new()
@@ -76,11 +113,11 @@ async fn main() {
                 web::scope("/report")
                     .service(report::get_all_reports)
                     .service(report::get_report)
-                    .service(report::submit_report),
+                    .service(report::submit_report)
+                    .service(report::delete_report),
             )
-            .app_data(web::Data::new(AppState {
-                database: database_pool.clone(),
-            }))
+            .service(SwaggerUi::new("/docs/{_:.*}").url("/api-doc/openapi.json", openapi.clone()))
+            .app_data(web::Data::new(app_state.clone()))
     });
 
     let http_server = match http_server.bind(("127.0.0.1", 8080)) {

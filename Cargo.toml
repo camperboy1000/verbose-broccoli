@@ -16,6 +16,8 @@ sqlx = { version = "0.6", features = [
     "chrono",
 ] }
 syslog = "6"
+utoipa = { version = "3.2", features = ["actix_extras", "chrono"] }
+utoipa-swagger-ui = { version = "3.1", features = ["actix-web"] }
 
 [profile.dev.package.sqlx-macros]
 opt-level = 3

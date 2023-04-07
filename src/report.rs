@@ -6,11 +6,12 @@ use actix_web::{
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use sqlx::{query, query_as, Pool, Postgres};
+use utoipa::ToSchema;
 
 use crate::models::{AppState, Report, ReportType};
 
-#[derive(Serialize, Deserialize)]
-struct ReportSubmission {
+#[derive(Serialize, Deserialize, ToSchema)]
+pub struct ReportSubmission {
     machine_id: String,
     room_id: i32,
     reporter_username: String,
@@ -61,6 +62,13 @@ async fn is_machine_present(
     }
 }
 
+#[utoipa::path(
+    context_path = "/report",
+    responses(
+        (status = 200, description = "List of all machines", body = Vec<Report>),
+        (status = 500, description = "An internal server error occurred")
+    )
+)]
 #[get("/")]
 async fn get_all_reports(data: Data<AppState>) -> impl Responder {
     match query_as!(
@@ -86,6 +94,14 @@ async fn get_all_reports(data: Data<AppState>) -> impl Responder {
     }
 }
 
+#[utoipa::path(
+    context_path = "/report",
+    responses(
+        (status = 200, description = "The requested report", body = Report),
+        (status = 404, description = "The requested report was not found"),
+        (status = 500, description = "An internal server error occurred")
+    )
+)]
 #[get("/{report_id}")]
 async fn get_report(data: Data<AppState>, path: Path<i32>) -> impl Responder {
     let report_id = path.into_inner();
@@ -118,6 +134,14 @@ async fn get_report(data: Data<AppState>, path: Path<i32>) -> impl Responder {
     }
 }
 
+#[utoipa::path(
+    context_path = "/report",
+    responses(
+        (status = 201 , description = "The report was created", body = Report),
+        (status = 400, description = "The requested query was invalid"),
+        (status = 500, description = "An internal server error occurred")
+    )
+)]
 #[post("/")]
 async fn submit_report(
     data: Data<AppState>,
@@ -173,6 +197,14 @@ async fn submit_report(
     }
 }
 
+#[utoipa::path(
+    context_path = "/report",
+    responses(
+        (status = 200, description = "The requested report was deleted", body = Report),
+        (status = 404, description = "The requested report was not found"),
+        (status = 500, description = "An internal server error occurred")
+    )
+)]
 #[delete("/{report_id}")]
 async fn delete_report(data: Data<AppState>, path: Path<i32>) -> impl Responder {
     let report_id = path.into_inner();
