@@ -34,7 +34,7 @@ async fn is_report_present(
     .fetch_optional(database)
     .await
     {
-        Ok(present) => Ok(present.is_some()),
+        Ok(result) => Ok(result.is_some()),
         Err(err) => Err(err),
     }
 }
@@ -57,7 +57,7 @@ async fn is_machine_present(
     .fetch_optional(database)
     .await
     {
-        Ok(present) => Ok(present.is_some()),
+        Ok(result) => Ok(result.is_some()),
         Err(err) => Err(err),
     }
 }
@@ -210,7 +210,7 @@ async fn delete_report(data: Data<AppState>, path: Path<i32>) -> impl Responder 
     let report_id = path.into_inner();
 
     let report_present = match is_report_present(&data.database, &report_id).await {
-        Ok(present) => present,
+        Ok(result) => result,
         Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
     };
 
