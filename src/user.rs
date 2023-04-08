@@ -5,11 +5,12 @@ use actix_web::{
 };
 use serde::{Deserialize, Serialize};
 use sqlx::{query, query_as, Pool, Postgres};
+use utoipa::ToSchema;
 
 use crate::models::{AppState, User};
 
-#[derive(Serialize, Deserialize)]
-struct UserSubmission {
+#[derive(Serialize, Deserialize, ToSchema)]
+pub struct UserSubmission {
     username: String,
     admin: bool,
 }
@@ -37,7 +38,7 @@ async fn is_username_present(
 #[utoipa::path(
     context_path = "/user",
     responses(
-        (status = 200, description = "Lists all users", body = Vec<User>),
+        (status = 200, description = "Lists all users", body = Vec<User>, example = json!([{"username": "admin", "admin": true}])),
         (status = 500, description = "An internal server error occurred")
     )
 )]
@@ -54,14 +55,14 @@ async fn get_all_users(data: Data<AppState>) -> impl Responder {
     .await
     {
         Ok(users) => HttpResponse::Ok().json(users),
-        Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+        Err(err) => HttpResponse::InternalServerError().json(err.to_string()),
     }
 }
 
 #[utoipa::path(
     context_path = "/user",
     responses(
-        (status = 200, description = "The requested user", body=User),
+        (status = 200, description = "The requested user", body=User, example = json!({"username": "admin", "admin": true})),
         (status = 404, description = "The requested user was not found"),
         (status = 500, description = "An internal server error occurred")
     )
@@ -82,18 +83,24 @@ async fn get_user(data: Data<AppState>, path: Path<String>) -> impl Responder {
     .fetch_optional(&data.database)
     .await
     {
-        Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+        Err(err) => HttpResponse::InternalServerError().json(err.to_string()),
         Ok(user) => match user {
             Some(user) => HttpResponse::Ok().json(&user),
-            None => HttpResponse::NotFound().finish(),
+            None => HttpResponse::NotFound().json(format!("The user {username} was not found.")),
         },
     }
 }
 
 #[utoipa::path(
     context_path = "/user",
+    request_body(
+        content = UserSubmission,
+        content_type = "application/json",
+        description = "JSON object containing username and admin status",
+        example = json!({"username": "admin", "admin": true})
+    ),
     responses(
-        (status = 201, description = "The user requested", body = User),
+        (status = 201, description = "The user was added", body = User, example = json!({"username": "admin", "admin": true})),
         (status = 409, description = "The requested username is already in use"),
         (status = 500, description = "An internal server error occurred")
     )
@@ -106,12 +113,12 @@ async fn add_user(
     let username_present =
         match is_username_present(&data.database, &user_submission.username).await {
             Ok(result) => result,
-            Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
+            Err(err) => return HttpResponse::InternalServerError().json(err.to_string()),
         };
 
     if username_present {
         return HttpResponse::Conflict()
-            .body(format!("{} is already a user", &user_submission.username));
+            .json(format!("{} is already taken", &user_submission.username));
     }
 
     match query_as!(
@@ -128,14 +135,14 @@ async fn add_user(
     .await
     {
         Ok(user) => HttpResponse::Created().json(user),
-        Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+        Err(err) => HttpResponse::InternalServerError().json(err.to_string()),
     }
 }
 
 #[utoipa::path(
     context_path = "/user",
     responses(
-        (status = 200, description = "Delected the requested user", body = User),
+        (status = 200, description = "The requested user was deleted", body = User, example = json!({"username": "admin", "admin": true})),
         (status = 404, description = "The requested user was not found"),
         (status = 500, description = "An internal server error occurred")
     )
@@ -146,11 +153,11 @@ async fn delete_user(data: Data<AppState>, path: Path<String>) -> impl Responder
 
     let username_present = match is_username_present(&data.database, &username).await {
         Ok(result) => result,
-        Err(err) => return HttpResponse::InternalServerError().body(err.to_string()),
+        Err(err) => return HttpResponse::InternalServerError().json(err.to_string()),
     };
 
     if !username_present {
-        return HttpResponse::NotFound().body(format!("The user {username} was not found."));
+        return HttpResponse::NotFound().json(format!("The user {username} was not found."));
     }
 
     match query_as!(
@@ -166,6 +173,6 @@ async fn delete_user(data: Data<AppState>, path: Path<String>) -> impl Responder
     .await
     {
         Ok(user) => HttpResponse::Ok().json(user),
-        Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+        Err(err) => HttpResponse::InternalServerError().json(err.to_string()),
     }
 }

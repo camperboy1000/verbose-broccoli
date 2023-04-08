@@ -10,8 +10,8 @@ pub struct AppState {
 
 #[derive(Serialize, Deserialize, ToSchema)]
 pub struct Machine {
-    pub machine_id: String,
     pub room_id: i32,
+    pub machine_id: String,
     pub machine_type: MachineType,
 }
 

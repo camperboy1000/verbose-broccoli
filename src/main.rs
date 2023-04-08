@@ -2,10 +2,11 @@ use std::{env, process};
 
 use actix_web::{web, App, HttpServer};
 use laundry_api::{
-    machine,
+    machine::{self, MachineSubmission},
     models::{AppState, Machine, MachineType, Report, ReportType, Room, User},
     report::{self, ReportSubmission},
-    room, user,
+    room::{self, RoomSubmission},
+    user::{self, UserSubmission},
 };
 use sqlx::{PgPool, Pool, Postgres};
 use utoipa::OpenApi;
@@ -66,8 +67,12 @@ async fn main() {
         paths(
             machine::get_all_machines,
             machine::get_machine,
+            machine::add_machine,
+            machine::delete_machine,
             room::get_all_rooms,
             room::get_room,
+            room::add_room,
+            room::delete_room,
             user::get_all_users,
             user::get_user,
             user::add_user,
@@ -84,7 +89,10 @@ async fn main() {
             User,
             MachineType,
             ReportType,
-            ReportSubmission
+            ReportSubmission,
+            UserSubmission,
+            RoomSubmission,
+            MachineSubmission
         ))
     )]
     struct ApiDoc;
@@ -99,12 +107,16 @@ async fn main() {
             .service(
                 web::scope("/machine")
                     .service(machine::get_all_machines)
-                    .service(machine::get_machine),
+                    .service(machine::get_machine)
+                    .service(machine::add_machine)
+                    .service(machine::delete_machine),
             )
             .service(
                 web::scope("/room")
                     .service(room::get_all_rooms)
-                    .service(room::get_room),
+                    .service(room::get_room)
+                    .service(room::add_room)
+                    .service(room::delete_room),
             )
             .service(
                 web::scope("/user")
