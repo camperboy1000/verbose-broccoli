@@ -69,6 +69,7 @@ async fn main() {
             machine::get_machine,
             machine::add_machine,
             machine::delete_machine,
+            machine::get_machine_reports,
             room::get_all_rooms,
             room::get_room,
             room::add_room,
@@ -109,7 +110,8 @@ async fn main() {
                     .service(machine::get_all_machines)
                     .service(machine::get_machine)
                     .service(machine::add_machine)
-                    .service(machine::delete_machine),
+                    .service(machine::delete_machine)
+                    .service(machine::get_machine_reports),
             )
             .service(
                 web::scope("/room")

@@ -47,8 +47,8 @@ async fn is_report_present(
     responses(
         (status = 200, description = "List of all machines", body = Vec<Report>, example = json!([{
             "report_id": 1,
-            "machine_id": "A",
             "room_id": 1,
+            "machine_id": "A",
             "reporter_username": "Admin",
             "report_type": "Broken",
             "description": "No heat",
@@ -65,8 +65,8 @@ async fn get_all_reports(data: Data<AppState>) -> impl Responder {
         r#"
         SELECT 
             id AS "report_id: i32",
-            machine_id,
             room_id,
+            machine_id,
             reporter_username,
             time,
             type AS "report_type: ReportType",
@@ -88,8 +88,8 @@ async fn get_all_reports(data: Data<AppState>) -> impl Responder {
     responses(
         (status = 200, description = "The requested report", body = Report, example = json!({
             "report_id": 1,
-            "machine_id": "A",
             "room_id": 1,
+            "machine_id": "A",
             "reporter_username": "Admin",
             "report_type": "Broken",
             "description": "No heat",
@@ -109,8 +109,8 @@ async fn get_report(data: Data<AppState>, path: Path<i32>) -> impl Responder {
         r#"
         SELECT
             id AS "report_id: i32",
-            machine_id,
             room_id,
+            machine_id,
             reporter_username,
             time,
             type AS "report_type: ReportType",
@@ -141,8 +141,8 @@ async fn get_report(data: Data<AppState>, path: Path<i32>) -> impl Responder {
         content_type = "application/json",
         description = "JSON object containing the room id, machine id, reporter's username, report type, and an optional description",
         example = json!({
-            "machine_id": "A",
             "room_id": 1,
+            "machine_id": "A",
             "reporter_username": "admin",
             "report_type": "Broken",
             "description": "No heat",
@@ -151,8 +151,8 @@ async fn get_report(data: Data<AppState>, path: Path<i32>) -> impl Responder {
     responses(
         (status = 201, description = "The report was created", body = Report, example = json!({
             "report_id": 1,
-            "machine_id": "A",
             "room_id": 1,
+            "machine_id": "A",
             "reporter_username": "Admin",
             "report_type": "Broken",
             "description": "No heat",
@@ -189,18 +189,19 @@ async fn submit_report(
     match query_as!(
         Report,
         r#"
-        INSERT INTO report (machine_id, reporter_username, type, description, time)
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO report (room_id, machine_id, reporter_username, type, description, time)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING
             id AS "report_id: i32",
-            machine_id,
             room_id,
+            machine_id,
             reporter_username,
             time,
             type AS "report_type: ReportType",
             description,
             archived
         "#,
+        &report_submission.room_id,
         &report_submission.machine_id,
         &report_submission.reporter_username,
         &report_submission.report_type as &ReportType,
@@ -223,8 +224,8 @@ async fn submit_report(
     responses(
         (status = 200, description = "The requested report was deleted", body = Report, example = json!({
             "report_id": 1,
-            "machine_id": "A",
             "room_id": 1,
+            "machine_id": "A",
             "reporter_username": "Admin",
             "report_type": "Broken",
             "description": "No heat",
@@ -255,8 +256,8 @@ async fn delete_report(data: Data<AppState>, path: Path<i32>) -> impl Responder 
     WHERE id = $1
     RETURNING
         id as "report_id: i32",
-        machine_id,
         room_id,
+        machine_id,
         reporter_username,
         time,
         type as "report_type: ReportType",

@@ -8,7 +8,7 @@ use sqlx::{query, query_as, Pool, Postgres};
 use utoipa::ToSchema;
 
 use crate::{
-    models::{AppState, Machine, MachineType},
+    models::{AppState, Machine, MachineType, Report, ReportType},
     room,
 };
 
@@ -237,6 +237,66 @@ async fn delete_machine(data: Data<AppState>, path: Path<(i32, String)>) -> impl
     .await
     {
         Ok(machine) => HttpResponse::Ok().json(machine),
+        Err(err) => HttpResponse::InternalServerError().json(err.to_string()),
+    }
+}
+
+#[utoipa::path(
+    context_path = "/machine",
+    responses(
+        (status = 200, description = "List of all unarchived reports for the requested machine", body = Vec<Report>, example = json!([{
+            "report_id": 1,
+            "room_id": 1,
+            "machine_id": "A",
+            "reporter_username": "Admin",
+            "report_type": "Broken",
+            "description": "No heat",
+            "time": "2023-01-01T12:00:00.000Z",
+            "archived": false,
+        }])),
+        (status = 400, description = "The requested query was invalid"),
+        (status = 500, description = "An internal server occurred")
+    )
+)]
+#[get("/{room_id}/{machine_id}/reports")]
+async fn get_machine_reports(data: Data<AppState>, path: Path<(i32, String)>) -> impl Responder {
+    let (room_id, machine_id) = path.into_inner();
+
+    let machine_present = match is_machine_present(&data.database, &room_id, &machine_id).await {
+        Ok(result) => result,
+        Err(err) => return HttpResponse::InternalServerError().json(err.to_string()),
+    };
+
+    if !machine_present {
+        return HttpResponse::BadRequest().json(format!(
+            "Machine id {machine_id} was not found in room id {room_id}"
+        ));
+    }
+
+    match query_as!(
+        Report,
+        r#"
+        SELECT
+            id AS "report_id: i32",
+            room_id,
+            machine_id,
+            reporter_username,
+            time,
+            type AS "report_type: ReportType",
+            description,
+            archived
+        FROM report
+        WHERE room_id = $1
+            AND machine_id = $2
+            AND archived = false
+        "#,
+        &room_id,
+        &machine_id
+    )
+    .fetch_all(&data.database)
+    .await
+    {
+        Ok(reports) => HttpResponse::Ok().json(reports),
         Err(err) => HttpResponse::InternalServerError().json(err.to_string()),
     }
 }
