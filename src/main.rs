@@ -1,6 +1,6 @@
 use std::{env, process};
 
-use actix_web::{web, App, HttpServer};
+use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use laundry_api::{
     machine::{self, MachineSubmission},
     models::{AppState, Machine, MachineType, Report, ReportType, Room, User},
@@ -56,6 +56,12 @@ fn connect_postgres_database() -> Pool<Postgres> {
             process::exit(1);
         }
     }
+}
+
+/// A simple ping reoute which can be used for health checks
+#[get("/ping")]
+async fn ping() -> impl Responder {
+    HttpResponse::Ok().json("Pong!")
 }
 
 #[actix_web::main]
@@ -114,6 +120,7 @@ async fn main() {
 
     let http_server = HttpServer::new(move || {
         App::new()
+            .service(ping)
             .service(
                 web::scope("/machine")
                     .service(machine::get_all_machines)
