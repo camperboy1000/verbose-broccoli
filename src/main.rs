@@ -79,6 +79,7 @@ async fn main() {
             user::add_user,
             user::delete_user,
             report::get_all_reports,
+            report::get_all_archived_reports,
             report::get_report,
             report::submit_report,
             report::delete_report,
@@ -132,6 +133,7 @@ async fn main() {
             .service(
                 web::scope("/report")
                     .service(report::get_all_reports)
+                    .service(report::get_all_archived_reports)
                     .service(report::get_report)
                     .service(report::submit_report)
                     .service(report::delete_report)

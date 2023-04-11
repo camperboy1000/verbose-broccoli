@@ -78,6 +78,49 @@ async fn get_all_reports(data: Data<AppState>) -> impl Responder {
             description,
             archived
         FROM report
+        WHERE archived = false
+        "#,
+    )
+    .fetch_all(&data.database)
+    .await
+    {
+        Ok(reports) => HttpResponse::Ok().json(reports),
+        Err(err) => HttpResponse::InternalServerError().json(err.to_string()),
+    }
+}
+
+#[utoipa::path(
+    context_path = "/report",
+    responses(
+        (status = 200, description = "List of all machines", body = Vec<Report>, example = json!([{
+            "report_id": 1,
+            "room_id": 1,
+            "machine_id": "A",
+            "reporter_username": "Admin",
+            "report_type": "Broken",
+            "description": "No heat",
+            "time": "2023-01-01T12:00:00.000Z",
+            "archived": true,
+          }])),
+        (status = 500, description = "An internal server error occurred")
+    )
+)]
+#[get("/archived")]
+async fn get_all_archived_reports(data: Data<AppState>) -> impl Responder {
+    match query_as!(
+        Report,
+        r#"
+        SELECT 
+            id AS "report_id: i32",
+            room_id,
+            machine_id,
+            reporter_username,
+            time,
+            type AS "report_type: ReportType",
+            description,
+            archived
+        FROM report
+        WHERE archived = true
         "#,
     )
     .fetch_all(&data.database)
