@@ -22,6 +22,11 @@ pub struct ReportSubmission {
     description: Option<String>,
 }
 
+#[derive(Serialize, Deserialize, ToSchema)]
+pub struct ArchiveSubmission {
+    report_id: i32,
+}
+
 async fn is_report_present(
     database: &Pool<Postgres>,
     report_id: &i32,
@@ -265,6 +270,75 @@ async fn delete_report(data: Data<AppState>, path: Path<i32>) -> impl Responder 
         archived
     "#,
         report_id
+    )
+    .fetch_one(&data.database)
+    .await
+    {
+        Ok(report) => HttpResponse::Ok().json(report),
+        Err(err) => HttpResponse::InternalServerError().json(err.to_string()),
+    }
+}
+
+#[utoipa::path(
+    context_path = "/report",
+    request_body(
+        content = ArchiveSubmission,
+        content_type = "application/json",
+        description = "JSON object containing the report id",
+        example = json!({
+            "report_id": 1,
+        })
+    ),
+    responses(
+        (status = 200, description = "The requested report was archived", body = Report, example = json!({
+            "report_id": 1,
+            "room_id": 1,
+            "machine_id": "A",
+            "reporter_username": "Admin",
+            "report_type": "Broken",
+            "description": "No heat",
+            "time": "2023-01-01T12:00:00.000Z",
+            "archived": true,
+        })),
+        (status = 400, description = "The requested query was invalid"),
+        (status = 500, description = "An internal server error occurred")
+    )
+)]
+#[post("/archive")]
+async fn archive_report(
+    data: Data<AppState>,
+    Json(archive_submission): Json<ArchiveSubmission>,
+) -> impl Responder {
+    let report_present =
+        match is_report_present(&data.database, &archive_submission.report_id).await {
+            Ok(result) => result,
+            Err(err) => return HttpResponse::InternalServerError().json(err.to_string()),
+        };
+
+    if !report_present {
+        return HttpResponse::BadRequest().json(format!(
+            "Report id {} was not found.",
+            &archive_submission.report_id
+        ));
+    }
+
+    match query_as!(
+        Report,
+        r#"
+        UPDATE report
+        SET archived = true
+        WHERE id = $1
+        RETURNING
+            id as "report_id: i32",
+            room_id,
+            machine_id,
+            reporter_username,
+            time,
+            type as "report_type: ReportType",
+            description,
+            archived
+        "#,
+        &archive_submission.report_id
     )
     .fetch_one(&data.database)
     .await

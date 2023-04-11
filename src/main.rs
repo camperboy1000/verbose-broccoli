@@ -4,7 +4,7 @@ use actix_web::{web, App, HttpServer};
 use laundry_api::{
     machine::{self, MachineSubmission},
     models::{AppState, Machine, MachineType, Report, ReportType, Room, User},
-    report::{self, ReportSubmission},
+    report::{self, ArchiveSubmission, ReportSubmission},
     room::{self, RoomSubmission},
     user::{self, UserSubmission},
 };
@@ -81,7 +81,8 @@ async fn main() {
             report::get_all_reports,
             report::get_report,
             report::submit_report,
-            report::delete_report
+            report::delete_report,
+            report::archive_report,
         ),
         components(schemas(
             Machine,
@@ -93,7 +94,8 @@ async fn main() {
             ReportSubmission,
             UserSubmission,
             RoomSubmission,
-            MachineSubmission
+            MachineSubmission,
+            ArchiveSubmission,
         ))
     )]
     struct ApiDoc;
@@ -132,7 +134,8 @@ async fn main() {
                     .service(report::get_all_reports)
                     .service(report::get_report)
                     .service(report::submit_report)
-                    .service(report::delete_report),
+                    .service(report::delete_report)
+                    .service(report::archive_report),
             )
             .service(SwaggerUi::new("/docs/{_:.*}").url("/api-doc/openapi.json", openapi.clone()))
             .app_data(web::Data::new(app_state.clone()))
