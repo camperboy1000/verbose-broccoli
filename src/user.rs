@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::{query, query_as, Pool, Postgres};
 use utoipa::ToSchema;
 
-use crate::models::{AppState, User};
+use crate::models::{AppState, Report, ReportType, User};
 
 #[derive(Serialize, Deserialize, ToSchema)]
 pub struct UserSubmission {
@@ -173,6 +173,118 @@ async fn delete_user(data: Data<AppState>, path: Path<String>) -> impl Responder
     .await
     {
         Ok(user) => HttpResponse::Ok().json(user),
+        Err(err) => HttpResponse::InternalServerError().json(err.to_string()),
+    }
+}
+
+#[utoipa::path(
+    context_path = "/user",
+    responses(
+        (status = 200, description = "List of all unarchived reports made by the requested user", body = Vec<Report>, example = json!([{
+            "report_id": 1,
+            "room_id": 1,
+            "machine_id": "A",
+            "reporter_username": "admin",
+            "report_type": "Broken",
+            "description": "No heat",
+            "time": "2023-01-01T12:00:00.000Z",
+            "archived": false,
+        }])),
+        (status = 404, description = "The requested user was not found"),
+        (status = 500, description = "An internal server error occurred")
+    )
+)]
+#[get("/{username}/reports")]
+async fn get_user_reports(data: Data<AppState>, path: Path<String>) -> impl Responder {
+    let username = path.into_inner();
+
+    let username_present = match is_username_present(&data.database, &username).await {
+        Ok(result) => result,
+        Err(err) => return HttpResponse::InternalServerError().json(err.to_string()),
+    };
+
+    if !username_present {
+        return HttpResponse::NotFound().json(format!("The user {username} was not found."));
+    }
+
+    match query_as!(
+        Report,
+        r#"
+        SELECT
+            id as "report_id: i32",
+            room_id,
+            machine_id,
+            reporter_username,
+            time,
+            type as "report_type: ReportType",
+            description,
+            archived
+        FROM report
+        WHERE reporter_username = $1
+            AND archived = false
+        "#,
+        &username
+    )
+    .fetch_all(&data.database)
+    .await
+    {
+        Ok(reports) => HttpResponse::Ok().json(reports),
+        Err(err) => HttpResponse::InternalServerError().json(err.to_string()),
+    }
+}
+
+#[utoipa::path(
+    context_path = "/user",
+    responses(
+        (status = 200, description = "List of all unarchived reports made by the requested user", body = Vec<Report>, example = json!([{
+            "report_id": 1,
+            "room_id": 1,
+            "machine_id": "A",
+            "reporter_username": "admin",
+            "report_type": "Broken",
+            "description": "No heat",
+            "time": "2023-01-01T12:00:00.000Z",
+            "archived": true,
+        }])),
+        (status = 404, description = "The requested user was not found"),
+        (status = 500, description = "An internal server error occurred")
+    )
+)]
+#[get("/{username}/reports/archived")]
+async fn get_user_archived_reports(data: Data<AppState>, path: Path<String>) -> impl Responder {
+    let username = path.into_inner();
+
+    let username_present = match is_username_present(&data.database, &username).await {
+        Ok(result) => result,
+        Err(err) => return HttpResponse::InternalServerError().json(err.to_string()),
+    };
+
+    if !username_present {
+        return HttpResponse::NotFound().json(format!("The user {username} was not found."));
+    }
+
+    match query_as!(
+        Report,
+        r#"
+        SELECT
+            id as "report_id: i32",
+            room_id,
+            machine_id,
+            reporter_username,
+            time,
+            type as "report_type: ReportType",
+            description,
+            archived
+        FROM report
+        WHERE reporter_username = $1
+            AND archived = true
+        "#,
+        &username
+    )
+    .fetch_all(&data.database)
+    .await
+    {
+        Ok(reports) => HttpResponse::Ok().json(reports),
         Err(err) => HttpResponse::InternalServerError().json(err.to_string()),
     }
 }

@@ -70,6 +70,7 @@ async fn main() {
             machine::add_machine,
             machine::delete_machine,
             machine::get_machine_reports,
+            machine::get_machine_archived_reports,
             room::get_all_rooms,
             room::get_room,
             room::add_room,
@@ -78,6 +79,8 @@ async fn main() {
             user::get_user,
             user::add_user,
             user::delete_user,
+            user::get_user_reports,
+            user::get_user_archived_reports,
             report::get_all_reports,
             report::get_all_archived_reports,
             report::get_report,
@@ -114,7 +117,8 @@ async fn main() {
                     .service(machine::get_machine)
                     .service(machine::add_machine)
                     .service(machine::delete_machine)
-                    .service(machine::get_machine_reports),
+                    .service(machine::get_machine_reports)
+                    .service(machine::get_machine_archived_reports),
             )
             .service(
                 web::scope("/room")
@@ -128,7 +132,9 @@ async fn main() {
                     .service(user::get_all_users)
                     .service(user::get_user)
                     .service(user::add_user)
-                    .service(user::delete_user),
+                    .service(user::delete_user)
+                    .service(user::get_user_reports)
+                    .service(user::get_user_archived_reports),
             )
             .service(
                 web::scope("/report")
