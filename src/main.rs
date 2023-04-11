@@ -138,7 +138,7 @@ async fn main() {
             .app_data(web::Data::new(app_state.clone()))
     });
 
-    let http_server = match http_server.bind(("127.0.0.1", 8080)) {
+    let http_server = match http_server.bind(("0.0.0.0", 8080)) {
         Ok(server) => server,
         Err(err) => {
             eprintln!("ERROR! Failed to bind the webserver: {err}");
