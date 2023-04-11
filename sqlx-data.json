@@ -1,0 +1,880 @@
+{
+  "db": "PostgreSQL",
+  "0bb276e83c43e83195d291d6d8d601d3538fbf6094c699fc6b5325aaf69601b0": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "\n        SELECT id\n        FROM room\n        WHERE id = $1\n        "
+  },
+  "0bd59db9815e79bb60ebc4373a194ee8e41b891402fbef229570a0902f8602bf": {
+    "describe": {
+      "columns": [
+        {
+          "name": "room_id: i32",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "\n        DELETE FROM room\n        WHERE id = $1\n        RETURNING\n            id AS \"room_id: i32\",\n            name,\n            description\n        "
+  },
+  "1272a3ba5b9efcb0731d40ece0bd5cde7d794aac4fdfdd60e462771db225d4d1": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "admin",
+          "ordinal": 1,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n        SELECT username, admin\n        FROM public.user\n        WHERE username = $1\n        "
+  },
+  "219c251be8c527497b768e9d58be80db8cb5cc2da3ce71817af9b6e2f9247b4e": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "admin",
+          "ordinal": 1,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n        DELETE FROM public.user\n        WHERE username = $1\n        RETURNING username, admin\n        "
+  },
+  "22b2fc1d93b794106d4ceeb17c8f228d19099accb050406df37c1421a9225d71": {
+    "describe": {
+      "columns": [
+        {
+          "name": "room_id: i32",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n        SELECT id as \"room_id: i32\", name, description\n        FROM room\n        "
+  },
+  "2467cd3ce6273e4388fcdf77cfe2426d5a2beebca07441c016210e55724f3238": {
+    "describe": {
+      "columns": [
+        {
+          "name": "report_id: i32",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "room_id",
+          "ordinal": 1,
+          "type_info": "Int4"
+        },
+        {
+          "name": "machine_id",
+          "ordinal": 2,
+          "type_info": "Bpchar"
+        },
+        {
+          "name": "reporter_username",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "time",
+          "ordinal": 4,
+          "type_info": "Timestamp"
+        },
+        {
+          "name": "report_type: ReportType",
+          "ordinal": 5,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "operational",
+                  "caution",
+                  "broken"
+                ]
+              },
+              "name": "report_type"
+            }
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 6,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "archived",
+          "ordinal": 7,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "\n    DELETE FROM report\n    WHERE id = $1\n    RETURNING\n        id as \"report_id: i32\",\n        room_id,\n        machine_id,\n        reporter_username,\n        time,\n        type as \"report_type: ReportType\",\n        description,\n        archived\n    "
+  },
+  "27a2f1797ff0fcb27dd30db7379831b7c542afaa98b02fa00cf29150446fb624": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "\n        SELECT id\n        FROM report\n        WHERE id = $1\n        "
+  },
+  "2bda78874648e068ccb080adb8f42c9b01d95f9380149a9af04c04e82cecb3da": {
+    "describe": {
+      "columns": [
+        {
+          "name": "report_id: i32",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "room_id",
+          "ordinal": 1,
+          "type_info": "Int4"
+        },
+        {
+          "name": "machine_id",
+          "ordinal": 2,
+          "type_info": "Bpchar"
+        },
+        {
+          "name": "reporter_username",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "time",
+          "ordinal": 4,
+          "type_info": "Timestamp"
+        },
+        {
+          "name": "report_type: ReportType",
+          "ordinal": 5,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "operational",
+                  "caution",
+                  "broken"
+                ]
+              },
+              "name": "report_type"
+            }
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 6,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "archived",
+          "ordinal": 7,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "\n        SELECT\n            id AS \"report_id: i32\",\n            room_id,\n            machine_id,\n            reporter_username,\n            time,\n            type AS \"report_type: ReportType\",\n            description,\n            archived\n        FROM report\n        WHERE id = $1\n        "
+  },
+  "3c28d599c7e65d925345dcf94c25fd2c36e710069cb92888b7cc3fdd9f9d4255": {
+    "describe": {
+      "columns": [
+        {
+          "name": "room_id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "machine_id",
+          "ordinal": 1,
+          "type_info": "Bpchar"
+        },
+        {
+          "name": "machine_type: MachineType",
+          "ordinal": 2,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "washer",
+                  "dryer"
+                ]
+              },
+              "name": "machine_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Bpchar"
+        ]
+      }
+    },
+    "query": "\n        DELETE FROM machine\n        WHERE room_id = $1\n            AND machine_id = $2\n        RETURNING\n            room_id,\n            machine_id,\n            type AS \"machine_type: MachineType\"\n        "
+  },
+  "40da10e5f20d0c529af12eee878a108225b7b10d2f9e43b2324eae85716d0d3c": {
+    "describe": {
+      "columns": [
+        {
+          "name": "room_id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "machine_id",
+          "ordinal": 1,
+          "type_info": "Bpchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Bpchar"
+        ]
+      }
+    },
+    "query": "\n        SELECT room_id, machine_id\n        FROM machine\n        WHERE room_id = $1\n            AND machine_id = $2\n        "
+  },
+  "4326bb296c87ffed98c6b1e95a3c30ed7e8a552312552229ff7335b83a6c61f6": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "admin",
+          "ordinal": 1,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n        SELECT username, admin\n        FROM public.user\n        "
+  },
+  "4d78f9e88167c4a95a38cc9af64ebd63fc7db7b4910267a0cab1a418cf80cdad": {
+    "describe": {
+      "columns": [
+        {
+          "name": "room_id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "machine_id",
+          "ordinal": 1,
+          "type_info": "Bpchar"
+        },
+        {
+          "name": "machine_type: MachineType",
+          "ordinal": 2,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "washer",
+                  "dryer"
+                ]
+              },
+              "name": "machine_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Bpchar",
+          {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "washer",
+                  "dryer"
+                ]
+              },
+              "name": "machine_type"
+            }
+          }
+        ]
+      }
+    },
+    "query": "\n        INSERT INTO machine (room_id, machine_id, type)\n        VALUES ($1, $2, $3)\n        RETURNING\n            room_id,\n            machine_id,\n            type AS \"machine_type: MachineType\"\n        "
+  },
+  "672d096e9de83a446aabfec8b9559b599ff008f66894d76ac605ed7780038092": {
+    "describe": {
+      "columns": [
+        {
+          "name": "room_id: i32",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar"
+        ]
+      }
+    },
+    "query": "\n        INSERT INTO room (name, description)\n        VALUES ($1, $2)\n        RETURNING\n            id AS \"room_id: i32\",\n            name,\n            description\n        "
+  },
+  "7ffa2489ee91d7630dbc4756715b1cf707056f9facb824c6bb3ec0503cfc7857": {
+    "describe": {
+      "columns": [
+        {
+          "name": "room_id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "machine_id",
+          "ordinal": 1,
+          "type_info": "Bpchar"
+        },
+        {
+          "name": "machine_type: MachineType",
+          "ordinal": 2,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "washer",
+                  "dryer"
+                ]
+              },
+              "name": "machine_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Bpchar"
+        ]
+      }
+    },
+    "query": "\n        SELECT\n            room_id,\n            machine_id,\n            type as \"machine_type: MachineType\"\n        FROM machine\n        WHERE room_id = $1\n            AND machine_id = $2\n        "
+  },
+  "ac8da0ff5b525473414b40f388d9b62260c22f53faae29581bb3dfe3a5fbc172": {
+    "describe": {
+      "columns": [
+        {
+          "name": "room_id: i32",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "\n        SELECT id as \"room_id: i32\", name, description\n        FROM room\n        WHERE id = $1\n        "
+  },
+  "af597dc65584363dc667bd95bfae86ff434c752c48c119e8605691c1cbd0247f": {
+    "describe": {
+      "columns": [
+        {
+          "name": "report_id: i32",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "room_id",
+          "ordinal": 1,
+          "type_info": "Int4"
+        },
+        {
+          "name": "machine_id",
+          "ordinal": 2,
+          "type_info": "Bpchar"
+        },
+        {
+          "name": "reporter_username",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "time",
+          "ordinal": 4,
+          "type_info": "Timestamp"
+        },
+        {
+          "name": "report_type: ReportType",
+          "ordinal": 5,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "operational",
+                  "caution",
+                  "broken"
+                ]
+              },
+              "name": "report_type"
+            }
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 6,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "archived",
+          "ordinal": 7,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n        SELECT \n            id AS \"report_id: i32\",\n            room_id,\n            machine_id,\n            reporter_username,\n            time,\n            type AS \"report_type: ReportType\",\n            description,\n            archived\n        FROM report\n        "
+  },
+  "b25556e49bd04b5e146d3de57a9b74f13dde89a8f57adc3c27e9c759c1dcef21": {
+    "describe": {
+      "columns": [
+        {
+          "name": "report_id: i32",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "room_id",
+          "ordinal": 1,
+          "type_info": "Int4"
+        },
+        {
+          "name": "machine_id",
+          "ordinal": 2,
+          "type_info": "Bpchar"
+        },
+        {
+          "name": "reporter_username",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "time",
+          "ordinal": 4,
+          "type_info": "Timestamp"
+        },
+        {
+          "name": "report_type: ReportType",
+          "ordinal": 5,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "operational",
+                  "caution",
+                  "broken"
+                ]
+              },
+              "name": "report_type"
+            }
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 6,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "archived",
+          "ordinal": 7,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Bpchar"
+        ]
+      }
+    },
+    "query": "\n        SELECT\n            id AS \"report_id: i32\",\n            room_id,\n            machine_id,\n            reporter_username,\n            time,\n            type AS \"report_type: ReportType\",\n            description,\n            archived\n        FROM report\n        WHERE room_id = $1\n            AND machine_id = $2\n            AND archived = false\n        "
+  },
+  "c1d800e765a748e723214dc8b1612d3111d4120be5ce1233f5c8bd5477f4fdc4": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n        SELECT username\n        FROM public.user\n        WHERE username = $1\n        "
+  },
+  "c2d70e2ee50f8178137f0de1c5a3e0f7286ac68638c2851272600de67407f85b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "admin",
+          "ordinal": 1,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Bool"
+        ]
+      }
+    },
+    "query": "\n        INSERT INTO public.user (username, admin)\n        VALUES ($1, $2)\n        RETURNING username, admin\n        "
+  },
+  "cc9d316d3f58cd8b4b069c9583b7d329225ce539eceaa3e2eb25ad3d155300aa": {
+    "describe": {
+      "columns": [
+        {
+          "name": "report_id: i32",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "room_id",
+          "ordinal": 1,
+          "type_info": "Int4"
+        },
+        {
+          "name": "machine_id",
+          "ordinal": 2,
+          "type_info": "Bpchar"
+        },
+        {
+          "name": "reporter_username",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "time",
+          "ordinal": 4,
+          "type_info": "Timestamp"
+        },
+        {
+          "name": "report_type: ReportType",
+          "ordinal": 5,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "operational",
+                  "caution",
+                  "broken"
+                ]
+              },
+              "name": "report_type"
+            }
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 6,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "archived",
+          "ordinal": 7,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Bpchar",
+          "Varchar",
+          {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "operational",
+                  "caution",
+                  "broken"
+                ]
+              },
+              "name": "report_type"
+            }
+          },
+          "Varchar",
+          "Timestamp"
+        ]
+      }
+    },
+    "query": "\n        INSERT INTO report (room_id, machine_id, reporter_username, type, description, time)\n        VALUES ($1, $2, $3, $4, $5, $6)\n        RETURNING\n            id AS \"report_id: i32\",\n            room_id,\n            machine_id,\n            reporter_username,\n            time,\n            type AS \"report_type: ReportType\",\n            description,\n            archived\n        "
+  },
+  "e11208d023748b95a82ab4637ee1bf7dad9eafd7e7e50fcd80d96daada5e85eb": {
+    "describe": {
+      "columns": [
+        {
+          "name": "room_id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "machine_id",
+          "ordinal": 1,
+          "type_info": "Bpchar"
+        },
+        {
+          "name": "machine_type: MachineType",
+          "ordinal": 2,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "washer",
+                  "dryer"
+                ]
+              },
+              "name": "machine_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n        SELECT\n            room_id,\n            machine_id,\n            type as \"machine_type: MachineType\"\n        FROM machine\n        "
+  }
+}

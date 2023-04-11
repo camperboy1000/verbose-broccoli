@@ -1,4 +1,4 @@
-FROM rust:bullseye
+FROM docker.io/rust:bullseye
 
 WORKDIR /usr/src/laundry-api
 COPY . .
