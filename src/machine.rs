@@ -304,7 +304,7 @@ async fn get_machine_reports(data: Data<AppState>, path: Path<(i32, String)>) ->
 #[utoipa::path(
     context_path = "/machine",
     responses(
-        (status = 200, description = "List of all unarchived reports for the requested machine", body = Vec<Report>, example = json!([{
+        (status = 200, description = "List of all archived reports for the requested machine", body = Vec<Report>, example = json!([{
             "report_id": 1,
             "room_id": 1,
             "machine_id": "A",

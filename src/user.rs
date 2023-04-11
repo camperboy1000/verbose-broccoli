@@ -236,7 +236,7 @@ async fn get_user_reports(data: Data<AppState>, path: Path<String>) -> impl Resp
 #[utoipa::path(
     context_path = "/user",
     responses(
-        (status = 200, description = "List of all unarchived reports made by the requested user", body = Vec<Report>, example = json!([{
+        (status = 200, description = "List of all archived reports made by the requested user", body = Vec<Report>, example = json!([{
             "report_id": 1,
             "room_id": 1,
             "machine_id": "A",

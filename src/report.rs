@@ -50,7 +50,7 @@ async fn is_report_present(
 #[utoipa::path(
     context_path = "/report",
     responses(
-        (status = 200, description = "List of all machines", body = Vec<Report>, example = json!([{
+        (status = 200, description = "List of all unarchived reports", body = Vec<Report>, example = json!([{
             "report_id": 1,
             "room_id": 1,
             "machine_id": "A",
@@ -92,7 +92,7 @@ async fn get_all_reports(data: Data<AppState>) -> impl Responder {
 #[utoipa::path(
     context_path = "/report",
     responses(
-        (status = 200, description = "List of all machines", body = Vec<Report>, example = json!([{
+        (status = 200, description = "List of all archived reports", body = Vec<Report>, example = json!([{
             "report_id": 1,
             "room_id": 1,
             "machine_id": "A",
