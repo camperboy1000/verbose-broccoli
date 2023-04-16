@@ -1,6 +1,6 @@
-use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Postgres, Type};
+use time::PrimitiveDateTime;
 use utoipa::ToSchema;
 
 #[derive(Clone)]
@@ -42,7 +42,7 @@ pub struct Report {
     pub machine_id: String,
     pub reporter_username: String,
     pub report_type: ReportType,
-    pub time: NaiveDateTime,
+    pub time: PrimitiveDateTime,
     pub description: Option<String>,
     pub archived: bool,
 }

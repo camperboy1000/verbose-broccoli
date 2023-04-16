@@ -3,9 +3,9 @@ use actix_web::{
     web::{Data, Json, Path},
     HttpResponse, Responder,
 };
-use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use sqlx::{query, query_as, Pool, Postgres};
+use time::{OffsetDateTime, PrimitiveDateTime};
 use utoipa::ToSchema;
 
 use crate::{
@@ -234,6 +234,8 @@ async fn submit_report(
         ));
     }
 
+    let current_time = OffsetDateTime::now_utc();
+
     match query_as!(
         Report,
         r#"
@@ -254,7 +256,7 @@ async fn submit_report(
         &report_submission.reporter_username,
         &report_submission.report_type as &ReportType,
         report_submission.description,
-        Utc::now().naive_utc()
+        PrimitiveDateTime::new(current_time.date(), current_time.time())
     )
     .fetch_one(&data.database)
     .await
